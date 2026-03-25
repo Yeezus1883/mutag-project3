@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUTAG GNN Case Study</title>
+  <meta name="description" content="An interpretable and robust Graph Neural Network case study on molecular mutagenicity prediction using MUTAG." />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --soft: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #dbeafe;
+      --success: #166534;
+      --success-bg: #dcfce7;
+      --warning: #92400e;
+      --warning-bg: #fef3c7;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      --maxw: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(circle at top left, #eff6ff 0%, transparent 30%),
+        radial-gradient(circle at top right, #ecfeff 0%, transparent 30%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(92%, var(--maxw));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      background: rgba(248, 250, 252, 0.8);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .hero {
+      padding: 84px 0 48px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.82rem;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 5vw, 4.4rem);
+      line-height: 1.06;
+      letter-spacing: -0.05em;
+      margin: 0 0 18px;
+      max-width: 900px;
+    }
+
+    .hero p {
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 780px;
+      margin: 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow);
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: white;
+      border-color: var(--soft);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 26px;
+      margin-top: 42px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      height: 100%;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .stat h3 {
+      margin: 0 0 8px;
+      font-size: 1.7rem;
+      letter-spacing: -0.03em;
+    }
+
+    .stat p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    section {
+      padding: 36px 0;
+    }
+
+    .section-header {
+      margin-bottom: 20px;
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      letter-spacing: -0.04em;
+      margin: 0 0 10px;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      max-width: 780px;
+      margin: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--soft);
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .task-card h3,
+    .result-card h3 {
+      margin-top: 0;
+      font-size: 1.18rem;
+      letter-spacing: -0.02em;
+    }
+
+    .task-card p,
+    .result-card p,
+    .card p {
+      color: var(--muted);
+    }
+    .table-card {
+    background: var(--card);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px;
+    margin-bottom: 26px;
+    }
+
+    .table-card h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+    }
+
+    .table-wrap {
+    overflow-x: auto;
+    border-radius: 18px;
+    border: 1px solid var(--soft);
+    }
+
+    table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    min-width: 720px;
+    }
+
+    thead {
+    background: #f8fafc;
+    }
+
+    th,
+    td {
+    text-align: left;
+    padding: 16px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+    font-size: 0.96rem;
+    }
+
+    th {
+    color: var(--text);
+    font-weight: 800;
+    }
+
+    td {
+    color: var(--muted);
+    }
+
+    tbody tr:last-child td {
+    border-bottom: none;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .tag-success {
+      color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .tag-warning {
+      color: var(--warning);
+      background: var(--warning-bg);
+    }
+
+    .screenshot {
+      width: 100%;
+      border-radius: 20px;
+      border: 1px solid var(--soft);
+      box-shadow: var(--shadow);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .screenshot img {
+      width: 100%;
+      display: block;
+    }
+
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 600;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      padding: 20px;
+    }
+
+    .callout {
+      padding: 18px 20px;
+      border-radius: 18px;
+      border: 1px solid var(--soft);
+      background: #ffffff;
+      color: var(--muted);
+    }
+
+    .callout strong {
+      color: var(--text);
+    }
+
+    .footer {
+      padding: 50px 0 70px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-box {
+      padding: 24px;
+      border-radius: 22px;
+      background: white;
+      border: 1px solid var(--soft);
+      box-shadow: var(--shadow);
+    }
+
+    ul.clean {
+      padding-left: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .nav-inner {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2.3rem;
+      }
+
+      .card {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="brand">MUTAG GNN Case Study</div>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#tasks">Tasks</a>
+        <a href="#results">Results</a>
+        <a href="#lessons">Lessons</a>
+        <a href="#future">Future Work</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero container">
+    <span class="eyebrow">Graph Neural Networks • Explainability • Robustness</span>
+    <h1>Beyond Accuracy: Building an Interpretable and Robust GNN for Molecular Mutagenicity Prediction</h1>
+    <p>
+      A technical case study on training a <strong>Graph Isomorphism Network (GIN)</strong> for the
+      <strong>MUTAG dataset</strong>, then extending it with explainability, calibration, adversarial testing,
+      and local subgraph analysis.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/esangyamgrid/mutag-gnn" target="_blank">View GitHub</a>
+      <a class="btn btn-secondary" href="#tasks">Explore Experiments</a>
+    </div>
+
+    <div class="hero-grid">
+      <div class="card">
+        <h3 style="margin-top:0; font-size:1.35rem;">Project Focus</h3>
+        <p>
+          Most graph classification projects stop at accuracy. This one was extended into a broader model
+          analysis system that asks more practical questions:
+        </p>
+        <ul class="clean">
+          <li>Why did the model predict mutagenicity?</li>
+          <li>Which atoms or substructures matter most?</li>
+          <li>Can the confidence score be trusted?</li>
+          <li>How robust is the model to graph perturbations?</li>
+        </ul>
+        <div class="pill-row">
+          <span class="pill">GIN</span>
+          <span class="pill">PyTorch Geometric</span>
+          <span class="pill">Streamlit</span>
+          <span class="pill">SHAP</span>
+          <span class="pill">Calibration</span>
+          <span class="pill">Robustness</span>
+        </div>
+      </div>
+
+      <div class="mini-stats">
+        <div class="stat">
+          <h3>5</h3>
+          <p>Major experimental extensions implemented</p>
+        </div>
+        <div class="stat">
+          <h3>10-fold</h3>
+          <p>Cross-validation training pipeline</p>
+        </div>
+        <div class="stat">
+          <h3>0.0498</h3>
+          <p>Observed Expected Calibration Error (ECE)</p>
+        </div>
+        <div class="stat">
+          <h3>0.915 → 0.505</h3>
+          <p>Accuracy drop under graph perturbation</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Overview</div>
+        <h2>Why this project matters</h2>
+        <p class="section-sub">
+          Molecular mutagenicity prediction is naturally a graph learning problem. Molecules are not sequences
+          or images — they are structured as atoms connected by bonds. This makes Graph Neural Networks a more
+          appropriate modeling choice than flat tabular methods.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Problem Setup</h3>
+          <p>
+            The <strong>MUTAG dataset</strong> contains molecular graphs labeled as
+            <strong>mutagenic</strong> or <strong>non-mutagenic</strong>. Each graph contains:
+          </p>
+          <ul class="clean">
+            <li><strong>Nodes</strong> → atoms</li>
+            <li><strong>Edges</strong> → chemical bonds</li>
+            <li><strong>Graph label</strong> → mutagenicity class</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Model Choice</h3>
+          <p>
+            A <strong>Graph Isomorphism Network (GIN)</strong> was used because it is one of the strongest
+            architectures for graph classification and works well on smaller molecular datasets.
+          </p>
+          <div class="tag tag-success">Core pipeline implemented successfully</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tasks">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Experiments</div>
+        <h2>Five tasks beyond plain classification</h2>
+        <p class="section-sub">
+          The project was extended into a broader graph model analysis system covering explainability,
+          robustness, confidence reliability, and local structural reasoning.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card task-card">
+          <h3>1. SHAP-based Feature Attribution</h3>
+          <p>
+            Attempted SHAP-style atom attribution by wrapping graph inputs into a SHAP-compatible interface.
+            This was useful for experimentation, but unstable in practice due to graph shape and topology constraints.
+          </p>
+          <div class="tag tag-warning">Exploratory / partially stable</div>
+        </div>
+
+        <div class="card task-card">
+          <h3>2. Adversarial Robustness</h3>
+          <p>
+            Tested model sensitivity to random edge perturbations at multiple magnitudes. Accuracy degradation
+            was measured and visualized through a robustness curve.
+          </p>
+          <div class="tag tag-success">Implemented</div>
+        </div>
+
+        <div class="card task-card">
+          <h3>3. LRP-style Relevance Decomposition</h3>
+          <p>
+            Instead of forcing brittle formal LRP, practical graph-compatible approximations were implemented:
+            <strong>Saliency Maps</strong> and <strong>Gradient × Input</strong>.
+          </p>
+          <div class="tag tag-success">Implemented</div>
+        </div>
+
+        <div class="card task-card">
+          <h3>4. Confidence Calibration</h3>
+          <p>
+            Prediction probabilities were evaluated using reliability analysis and
+            <strong>Expected Calibration Error (ECE)</strong> to assess whether model confidence was trustworthy.
+          </p>
+          <div class="tag tag-success">Implemented</div>
+        </div>
+
+        <div class="card task-card">
+          <h3>5. Subgraph Masking & Local Importance</h3>
+          <p>
+            Local graph regions were masked to identify which atoms and structural neighborhoods most strongly
+            influence prediction outcomes.
+          </p>
+          <div class="tag tag-success">Implemented</div>
+        </div>
+
+        <div class="card task-card">
+          <h3>Interactive App Layer</h3>
+          <p>
+            All major experiments were surfaced through a <strong>Streamlit interface</strong> with toggles for
+            node importance, subgraph extraction, SHAP, saliency, LRP-like relevance, calibration, and robustness.
+          </p>
+          <div class="tag tag-success">Deployment-ready UI</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Screenshots</div>
+        <h2>Visual outputs</h2>
+    <div class="grid-3">
+      <div class="screenshot">
+        <img src="docs/assets/highlight.png" alt="Node importance visualization" style="height: 400px; width: 330px; object-fit: fill;" />
+        <label for="screenshot1" style="text-align: center; display: block; margin-top: 12px;">Node importance visualization</label>
+      </div>
+      <div class="screenshot">
+        <img src="docs/assets/calibration.png" alt="Calibration curve visualization" style="height: 400px; width: 330px; object-fit: fill;" />
+        <label for="screenshot2" style="text-align: center; display: block; margin-top: 12px;">Calibration curve visualization</label>
+      </div>
+
+      <div class="screenshot">
+        <img src="docs/assets/robustness2.png" alt="Robustness" style="height: 400px; width: 330px; object-fit: fill;" />
+        <label for="screenshot3" style="text-align: center; display: block; margin-top: 12px;">Robustness Curve</label>
+      </div>
+
+      <div class="screenshot">
+        <img src="docs/assets/saliency.png" alt="Saliency map visualization" style="height: 400px; width: 330px; object-fit: fill;" />
+        <label for="screenshot4" style="text-align: center; display: block; margin-top: 12px;">Saliency map visualization</label>
+      </div>
+
+    </div>
+
+  <section id="results">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Results</div>
+        <h2>What worked, what failed, and what mattered</h2>
+        <p class="section-sub">
+          The strongest outcomes came from methods that aligned well with graph structure instead of forcing
+          generic explainability tooling onto relational inputs.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card result-card">
+          <h3>What worked best</h3>
+          <p>
+            The most reliable components were:
+          </p>
+          <ul class="clean">
+            <li>GIN training pipeline</li>
+            <li>Node importance visualization</li>
+            <li>Minimal subgraph extraction</li>
+            <li>Calibration analysis</li>
+            <li>Robustness evaluation</li>
+            <li>Saliency & Grad × Input</li>
+          </ul>
+        </div>
+
+        <div class="card result-card">
+          <h3>What failed most often</h3>
+          <p>
+            SHAP integration exposed the biggest engineering friction:
+          </p>
+          <ul class="clean">
+            <li>reshape and tensor mismatch issues</li>
+            <li>graph-to-tabular incompatibility</li>
+            <li>unstable or low-signal explanations</li>
+            <li>limited trust in some outputs</li>
+          </ul>
+        </div>
+
+        <div class="card result-card">
+          <h3>Most important insight</h3>
+          <p>
+            The project consistently showed that:
+          </p>
+          <div class="callout">
+            <strong>Practical graph-native methods outperformed theoretically attractive but poorly aligned generic tools.</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experiment-tables">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Detailed Results</div>
+        <h2>Experiment-wise evaluation tables</h2>
+        <p class="section-sub">
+          Each extension was evaluated not only by implementation success, but also by stability, interpretability, and practical usefulness.
+        </p>
+      </div>
+
+      <div class="table-card">
+        <h3>Task 1 — SHAP-based Feature Attribution</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Observation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Objective</td>
+                <td>Estimate atom-level contribution to mutagenicity prediction using SHAP-style explanations.</td>
+              </tr>
+              <tr>
+                <td>Approach</td>
+                <td>Wrapped graph input into a SHAP-compatible pipeline using node feature attribution.</td>
+              </tr>
+              <tr>
+                <td>What Worked</td>
+                <td>Basic SHAP integration, app toggle, partial score visualization, exploratory graph explanation flow.</td>
+              </tr>
+              <tr>
+                <td>What Failed</td>
+                <td>Shape mismatches, unstable outputs, graph-to-tabular incompatibility, occasional white/uninformative node maps.</td>
+              </tr>
+              <tr>
+                <td>Observed Outcome</td>
+                <td>Useful as an exploratory experiment, but not consistently reliable for graph-structured inputs.</td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td><span class="tag tag-warning">Partially Successful</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <h3>Task 2 — Adversarial Robustness via Edge Perturbation</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Perturbation Level</th>
+                <th>Observed Accuracy</th>
+                <th>Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0%</td>
+                <td>0.931</td>
+                <td>Strong baseline performance on unperturbed graphs.</td>
+              </tr>
+              <tr>
+                <td>5%</td>
+                <td>0.723/td>
+                <td>Minor structural corruption causes moderate degradation.</td>
+              </tr>
+              <tr>
+                <td>10%</td>
+                <td>0.378</td>
+                <td>Model becomes highly unreliable under stronger graph perturbation.</td>
+              </tr>
+              <tr>
+                <td>Key Insight</td>
+                <td colspan="2">The model relies strongly on graph topology and is structurally brittle under heavier perturbation.</td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td colspan="2"><span class="tag tag-success">Successfully Implemented</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <h3>Task 3 — LRP-style Relevance Decomposition</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Purpose</th>
+                <th>Observed Outcome</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Saliency Map</td>
+                <td>Highlight atoms the model is most sensitive to.</td>
+                <td>Stable, interpretable, and visually meaningful in most molecules.</td>
+                <td><span class="tag tag-success">Worked Well</span></td>
+              </tr>
+              <tr>
+                <td>Gradient × Input</td>
+                <td>Approximate atom-level relevance contribution (LRP-like).</td>
+                <td>Produced stronger and more usable attribution than raw gradients.</td>
+                <td><span class="tag tag-success">Worked Well</span></td>
+              </tr>
+              <tr>
+                <td>Formal LRP</td>
+                <td>Exact layer-wise relevance propagation for GNN internals.</td>
+                <td>Not implemented due to complexity of graph message passing and pooling operations.</td>
+                <td><span class="tag tag-warning">Approximated</span></td>
+              </tr>
+              <tr>
+                <td>Key Insight</td>
+                <td colspan="3">Gradient-based attribution proved more practical and stable than forcing full formal LRP or SHAP into the graph pipeline.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <h3>Task 4 — Cross-Fold Confidence Calibration</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Observed Value</th>
+                <th>Interpretation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Expected Calibration Error (ECE)</td>
+                <td>0.0498</td>
+                <td>Confidence scores are reasonably aligned with actual correctness.</td>
+              </tr>
+              <tr>
+                <td>Calibration Curve</td>
+                <td>Near ideal diagonal</td>
+                <td>Model confidence is fairly trustworthy across bins.</td>
+              </tr>
+              <tr>
+                <td>What Worked</td>
+                <td colspan="2">Reliability analysis, ECE computation, and calibration visualization integrated successfully into the app.</td>
+              </tr>
+              <tr>
+                <td>What Was Left</td>
+                <td colspan="2">Temperature scaling and fold-wise transfer calibration were not fully completed.</td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td colspan="2"><span class="tag tag-success">Successfully Implemented</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <h3>Task 5 — Subgraph Masking & Local Feature Importance</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Criterion</th>
+                <th>Observation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Objective</td>
+                <td>Identify atoms / local graph regions most critical to prediction.</td>
+              </tr>
+              <tr>
+                <td>Approach</td>
+                <td>Mask / suppress important regions and observe local contribution through graph visualization.</td>
+              </tr>
+              <tr>
+                <td>What Worked</td>
+                <td>Minimal subgraph visualization, node highlighting, local structural interpretation.</td>
+              </tr>
+              <tr>
+                <td>Issue Encountered</td>
+                <td>Some oxygen atoms visually appeared as carbon atoms due to node-label mismatch in minimal subgraph mode.</td>
+              </tr>
+              <tr>
+                <td>Fix Applied</td>
+                <td>Preserved original graph node labels and restricted masking logic to visualization-only importance fading.</td>
+              </tr>
+              <tr>
+                <td>Observed Outcome</td>
+                <td>One of the strongest and most intuitive explanation methods in the project.</td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td><span class="tag tag-success">Successfully Implemented</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+  <section id="lessons">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Engineering Lessons</div>
+        <h2>Key takeaways from the build</h2>
+        <p class="section-sub">
+          The project became significantly more valuable once the focus shifted from pure accuracy to trust,
+          inspectability, and failure analysis.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Technical Lessons</h3>
+          <ul class="clean">
+            <li>Accuracy alone is not enough for graph ML systems.</li>
+            <li>Graph explainability is much harder than tabular explainability.</li>
+            <li>Visualization layers can silently mislead if indexing is mishandled.</li>
+            <li>Confidence scores should be evaluated, not assumed trustworthy.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Practical Lessons</h3>
+          <ul class="clean">
+            <li>Gradient-based attribution is often more usable than SHAP for GNNs.</li>
+            <li>Subgraph masking is highly intuitive for molecular graphs.</li>
+            <li>Robustness testing reveals brittleness that accuracy hides.</li>
+            <li>Even small benchmark projects can become strong case studies with the right extensions.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="future">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-kicker">Future Work</div>
+        <h2>How this can be extended further</h2>
+        <p class="section-sub">
+          Several next steps could turn this from a strong experimental prototype into a more research-grade or production-ready graph ML system.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Explainability</h3>
+          <ul class="clean">
+            <li>GNNExplainer</li>
+            <li>PGExplainer</li>
+            <li>Integrated Gradients</li>
+            <li>Bond-level attribution</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Robustness</h3>
+          <ul class="clean">
+            <li>PGD-style graph attacks</li>
+            <li>Chemically valid perturbations</li>
+            <li>Adversarial training</li>
+            <li>Bond-aware attack logic</li>
+          </ul>
+        </div>
+
+        
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="card">
+        <h2 style="margin-top:0;">Final Note</h2>
+        <p>
+          The real value of this project was not just in making a model classify molecular graphs correctly.
+          It was in building a system that could be <strong>questioned, visualized, stress-tested, and interpreted</strong>.
+        </p>
+        <div class="callout" style="margin-top: 16px;">
+          <strong>Good ML systems should not just predict well. They should also explain themselves, expose their limits, and fail visibly.</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-box">
+        <strong>MUTAG GNN Case Study</strong><br/>
+        Built as a technical exploration of graph learning, explainability, robustness, and trustworthy ML systems.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
