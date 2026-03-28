@@ -633,6 +633,59 @@
 
     </div>
 
+    <section id="visualizations">
+        <div class="container">
+            <div class="section-header">
+            <div class="section-kicker">Interpretation</div>
+            <h2>Understanding the visualizations</h2>
+            <p class="section-sub">
+                Each visualization highlights a different aspect of model behavior — from feature importance to reliability and robustness.
+            </p>
+            </div>
+
+            <div class="grid-2">
+
+            <div class="card">
+                <h3>Node Importance</h3>
+                <p>
+                Highlights atoms that most strongly influence the prediction. Darker red nodes indicate higher contribution toward mutagenicity.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Saliency Map</h3>
+                <p>
+                Shows sensitivity of the prediction to input features. Nodes with higher gradients indicate regions where small changes significantly impact output.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Calibration Curve</h3>
+                <p>
+                Compares predicted confidence with actual accuracy. A curve close to the diagonal indicates well-calibrated probabilities.
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Robustness Curve</h3>
+                <p>
+                Measures how performance degrades under graph perturbations. Steeper drops indicate higher sensitivity to structural changes.
+                </p>
+            </div>
+
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+            <h3>How to read them together</h3>
+            <p>
+                Node-level explanations (importance, saliency) reveal <strong>where the model is looking</strong>, while calibration and robustness
+                analyses reveal <strong>how much the model can be trusted</strong> under uncertainty and perturbation.
+            </p>
+            </div>
+
+        </div>
+    </section>
+
   <section id="results">
     <div class="container">
       <div class="section-header">
@@ -727,10 +780,6 @@
                 <td>Observed Outcome</td>
                 <td>Useful as an exploratory experiment, but not consistently reliable for graph-structured inputs.</td>
               </tr>
-              <tr>
-                <td>Status</td>
-                <td><span class="tag tag-warning">Partially Successful</span></td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -766,10 +815,6 @@
               <tr>
                 <td>Key Insight</td>
                 <td colspan="2">The model relies strongly on graph topology and is structurally brittle under heavier perturbation.</td>
-              </tr>
-              <tr>
-                <td>Status</td>
-                <td colspan="2"><span class="tag tag-success">Successfully Implemented</span></td>
               </tr>
             </tbody>
           </table>
@@ -846,10 +891,6 @@
                 <td>What Was Left</td>
                 <td colspan="2">Temperature scaling and fold-wise transfer calibration were not fully completed.</td>
               </tr>
-              <tr>
-                <td>Status</td>
-                <td colspan="2"><span class="tag tag-success">Successfully Implemented</span></td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -889,10 +930,6 @@
               <tr>
                 <td>Observed Outcome</td>
                 <td>One of the strongest and most intuitive explanation methods in the project.</td>
-              </tr>
-              <tr>
-                <td>Status</td>
-                <td><span class="tag tag-success">Successfully Implemented</span></td>
               </tr>
             </tbody>
           </table>
