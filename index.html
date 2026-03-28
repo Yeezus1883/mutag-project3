@@ -499,6 +499,66 @@
     </div>
   </header>
 
+
+
+  <section id="key-insights">
+    <div class="container">
+        <div class="section-header">
+        <div class="section-kicker">At a Glance</div>
+        <h2>Key numeric insights</h2>
+        <p class="section-sub">
+            A compact summary of the most important quantitative findings from the project.
+        </p>
+        </div>
+
+        <div class="table-card">
+        <div class="table-wrap">
+            <table>
+            <thead>
+                <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>What it means</th>
+                <th>Why it matters</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td>Baseline Accuracy</td>
+                <td><strong>0.915</strong></td>
+                <td>The model correctly classifies most molecules under normal conditions.</td>
+                <td>Establishes that the GIN model learned meaningful graph structure.</td>
+                </tr>
+                <tr>
+                <td>Accuracy @ 5% Perturbation</td>
+                <td><strong>0.723</strong></td>
+                <td>Small graph corruption causes moderate performance drop.</td>
+                <td>Shows the model has some resilience to minor structural noise.</td>
+                </tr>
+                <tr>
+                <td>Accuracy @ 10% Perturbation</td>
+                <td><strong>0.378</strong></td>
+                <td>Performance collapses under stronger topology disruption.</td>
+                <td>Reveals that the model is structurally brittle under larger perturbations.</td>
+                </tr>
+                <tr>
+                <td>Expected Calibration Error (ECE)</td>
+                <td><strong>0.0351</strong></td>
+                <td>Confidence scores are reasonably aligned with actual correctness.</td>
+                <td>Indicates that prediction confidence is fairly trustworthy.</td>
+                </tr>
+                <tr>
+                <td>Evaluation Protocol</td>
+                <td><strong>10-fold CV</strong></td>
+                <td>Performance was measured across multiple train-test splits.</td>
+                <td>Improves reliability over a single split evaluation.</td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+  </section>  
   <section id="overview">
     <div class="container">
       <div class="section-header">
@@ -824,7 +884,7 @@
                 <th>Method</th>
                 <th>Purpose</th>
                 <th>Observed Outcome</th>
-               
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -832,19 +892,19 @@
                 <td>Saliency Map</td>
                 <td>Highlight atoms the model is most sensitive to.</td>
                 <td>Stable, interpretable, and visually meaningful in most molecules.</td>
-                
+                <td><span class="tag tag-success">Worked Well</span></td>
               </tr>
               <tr>
                 <td>Gradient × Input</td>
                 <td>Approximate atom-level relevance contribution (LRP-like).</td>
                 <td>Produced stronger and more usable attribution than raw gradients.</td>
-                
+                <td><span class="tag tag-success">Worked Well</span></td>
               </tr>
               <tr>
                 <td>Formal LRP</td>
                 <td>Exact layer-wise relevance propagation for GNN internals.</td>
                 <td>Not implemented due to complexity of graph message passing and pooling operations.</td>
-                
+                <td><span class="tag tag-warning">Approximated</span></td>
               </tr>
               <tr>
                 <td>Key Insight</td>
@@ -869,7 +929,7 @@
             <tbody>
               <tr>
                 <td>Expected Calibration Error (ECE)</td>
-                <td>0.0351</td>
+                <td>0.0498</td>
                 <td>Confidence scores are reasonably aligned with actual correctness.</td>
               </tr>
               <tr>
