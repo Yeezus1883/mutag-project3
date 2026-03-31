@@ -884,7 +884,6 @@
                 <th>Method</th>
                 <th>Purpose</th>
                 <th>Observed Outcome</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -892,19 +891,19 @@
                 <td>Saliency Map</td>
                 <td>Highlight atoms the model is most sensitive to.</td>
                 <td>Stable, interpretable, and visually meaningful in most molecules.</td>
-                <td><span class="tag tag-success">Worked Well</span></td>
+               
               </tr>
               <tr>
                 <td>Gradient × Input</td>
                 <td>Approximate atom-level relevance contribution (LRP-like).</td>
                 <td>Produced stronger and more usable attribution than raw gradients.</td>
-                <td><span class="tag tag-success">Worked Well</span></td>
+                
               </tr>
               <tr>
                 <td>Formal LRP</td>
                 <td>Exact layer-wise relevance propagation for GNN internals.</td>
                 <td>Not implemented due to complexity of graph message passing and pooling operations.</td>
-                <td><span class="tag tag-warning">Approximated</span></td>
+               
               </tr>
               <tr>
                 <td>Key Insight</td>
